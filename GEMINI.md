@@ -30,4 +30,11 @@ Construire un pipeline MLOps distribué de bout en bout :
 - **Principe de Vérification Systématique (Zéro Déchet Non Testé)** :
   - Tout nouvel ajout ou fichier de configuration créé dans la base de code (`Dockerfile`, `docker-compose.yml`, scripts, manifests) doit être OBLIGATOIREMENT testé et validé par une commande d'exécution réelle avant de clore l'étape.
   - Ne jamais se fier à la seule validité syntaxique théorique : vérifier le cycle complet (démarrage, test d'appel/santé, arrêt propre).
+- **Protocole de Transparence Systématique Avant Action** :
+  - Avant de déclencher toute commande terminal ou modification de fichier dans le projet, afficher obligatoirement un encadré explicitant :
+    1. **La commande exacte** ou le fichier ciblé.
+    2. **Le but précis** de l'opération (pourquoi cette action est nécessaire).
+    3. **Le résultat attendu en retour** (ce que la commande va produire ou afficher).
+  - Aucune action ne doit être lancée sans cette visibilité préalable.
+
 

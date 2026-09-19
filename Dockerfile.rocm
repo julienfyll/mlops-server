@@ -1,0 +1,63 @@
+# ==============================================================================
+# ÉTAPE 1 : BUILDER (Installation de PyTorch ROCm 6.2 et dépendances avec uv)
+# ==============================================================================
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+
+WORKDIR /app
+
+# 1. Création de l'environnement virtuel et installation de PyTorch ROCm 6.2 + API
+COPY pyproject.toml /app/pyproject.toml
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv venv /app/.venv && \
+    uv pip install --extra-index-url https://download.pytorch.org/whl/rocm6.2 \
+    "torch==2.5.1+rocm6.2" "pytorch-triton-rocm==3.1.0" \
+    "fastapi>=0.141.1" "pydantic>=2.13.5" "transformers>=5.17.0" \
+    "uvicorn[standard]>=0.53.0" "accelerate>=1.15.0"
+
+# 2. Copie du code applicatif et installation du package mlops-server
+COPY src /app/src
+COPY README.md /app/README.md
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --no-deps -e /app
+
+# ==============================================================================
+# ÉTAPE 2 : RUNNER (Image de production AMD ROCm avec accès matériel GPU)
+# ==============================================================================
+FROM python:3.12-slim-bookworm AS runner
+
+# Installation des bibliothèques système requises pour le runtime ROCm HIP
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnuma1 \
+    libelf1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Sécurité : Création de l'utilisateur appuser rattaché aux groupes d'accès matériel
+RUN groupadd -g 107 render 2>/dev/null || true && \
+    groupadd -g 44 video 2>/dev/null || true && \
+    useradd -m -u 1000 -G video,render appuser
+
+WORKDIR /app
+
+# Copie de l'environnement virtuel pré-construit et du code
+COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
+COPY --from=builder --chown=appuser:appuser /app/src /app/src
+COPY --from=builder --chown=appuser:appuser /app/pyproject.toml /app/pyproject.toml
+COPY --from=builder --chown=appuser:appuser /app/README.md /app/README.md
+
+# Configuration des variables d'environnement
+# HSA_OVERRIDE_GFX_VERSION=10.3.0 : Obligatoire pour la compatibilité RDNA 2 (RX 6800)
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    HF_HUB_DISABLE_XET=1 \
+    HSA_OVERRIDE_GFX_VERSION=10.3.0 \
+    HOST=0.0.0.0 \
+    PORT=8000
+
+USER appuser
+
+EXPOSE 8000
+
+CMD ["mlops-server"]
