@@ -27,3 +27,7 @@ Construire un pipeline MLOps distribué de bout en bout :
   - À la fin de chaque étape exécutée, fournir un compte-rendu clair des actions réalisées et de leurs impacts.
   - Présenter systématiquement le détail de l'étape suivante (objectifs, fichiers concernés, logique du code ou commandes prévues).
   - Attendre impérativement le retour et l'accord explicite de l'utilisateur avant de passer à l'étape suivante.
+- **Principe de Vérification Systématique (Zéro Déchet Non Testé)** :
+  - Tout nouvel ajout ou fichier de configuration créé dans la base de code (`Dockerfile`, `docker-compose.yml`, scripts, manifests) doit être OBLIGATOIREMENT testé et validé par une commande d'exécution réelle avant de clore l'étape.
+  - Ne jamais se fier à la seule validité syntaxique théorique : vérifier le cycle complet (démarrage, test d'appel/santé, arrêt propre).
+

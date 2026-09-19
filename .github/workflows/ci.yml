@@ -1,0 +1,31 @@
+name: CI (Intégration Continue)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Tests automatisés & Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Récupération du code source
+        uses: actions/checkout@v4
+
+      - name: 2. Installation de uv avec mise en cache
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: 3. Configuration de Python 3.12
+        run: uv python install 3.12
+
+      - name: 4. Synchronisation stricte des dépendances
+        run: uv sync --frozen
+
+      - name: 5. Exécution de la suite de tests
+        run: uv run pytest -v
