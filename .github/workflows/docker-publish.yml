@@ -3,6 +3,12 @@ name: CD (Publication Docker Multi-Tag sur GHCR)
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'Dockerfile*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/docker-publish.yml'
 
 jobs:
   publish-cpu:
