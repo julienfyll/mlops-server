@@ -123,10 +123,30 @@ Génération de texte par le LLM.
 
 ---
 
+## ☸️ Orchestration Kubernetes (k3s)
+
+L'application est orchestrée sur un cluster Kubernetes **k3s** avec réservation matérielle exclusive du GPU AMD (`amd.com/gpu: 1`), stratégie `Recreate` et auto-guérison (*self-healing*) :
+
+```bash
+# 1. Déployer le plugin matériel AMD GPU
+kubectl apply -f https://raw.githubusercontent.com/ROCm/k8s-device-plugin/master/k8s-ds-amdgpu-dp.yaml
+
+# 2. Déployer le serveur LLM et son service NodePort
+kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml
+
+# 3. Vérifier le statut du Pod (1/1 Running sur GPU AMD)
+kubectl get pods -l app=mlops-server -o wide
+
+# 4. Interroger l'API via le port NodePort 30080
+curl http://<IP_SERVEUR>:30080/health
+```
+
+---
+
 ## 🗺 Feuille de Route MLOps
 
 1. [x] **Phase 1 : Socle Applicatif & Local Mac M5** (FastAPI, PyTorch MPS, tests pytest, repo GitHub).
 2. [x] **Phase 2 : Conteneurisation Multi-Architecture** (Dockerfile multi-stage, image CPU légère 369 Mo, docker-compose).
 3. [x] **Phase 3 : CI/CD GitHub Actions & Publication GHCR** (Build & Push automatique des images CPU et ROCm 6.2).
 4. [x] **Phase 4 : Accélération Matérielle AMD RX 6800** (Ubuntu 22.04, passthrough `/dev/kfd` & `/dev/dri`, benchmark 35 tok/s).
-5. [ ] **Phase 5 : Orchestration Kubernetes (k3s)** (k3s, AMD GPU Device Plugin, manifests Deployment & Service, auto-healing).
+5. [x] **Phase 5 : Orchestration Kubernetes (k3s)** (k3s, AMD GPU Device Plugin, manifests Deployment & Service, auto-healing validé).
