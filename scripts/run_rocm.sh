@@ -51,14 +51,19 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     docker rm "$CONTAINER_NAME" >/dev/null 2>&1 || true
 fi
 
+# Récupération dynamique des GID de l'hôte pour garantir l'accès direct aux périphériques
+RENDER_GID=$(getent group render | cut -d: -f3 || echo "110")
+VIDEO_GID=$(getent group video | cut -d: -f3 || echo "44")
+
 # Lancement du conteneur
 docker run -d \
   --name "$CONTAINER_NAME" \
   --restart unless-stopped \
   --device=/dev/kfd \
   --device=/dev/dri \
-  --group-add video \
-  --group-add render \
+  --group-add "$VIDEO_GID" \
+  --group-add "$RENDER_GID" \
+  --security-opt seccomp=unconfined \
   --ipc=host \
   -e HSA_OVERRIDE_GFX_VERSION=10.3.0 \
   -e HOST=0.0.0.0 \
