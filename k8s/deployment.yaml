@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlops-server
+  labels:
+    app: mlops-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlops-server
+  template:
+    metadata:
+      labels:
+        app: mlops-server
+    spec:
+      containers:
+      - name: mlops-server
+        image: ghcr.io/julienfyll/mlops-server:rocm
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: HSA_OVERRIDE_GFX_VERSION
+          value: "10.3.0"
+        - name: HF_HUB_DISABLE_XET
+          value: "1"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8000"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+            amd.com/gpu: "1"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+            amd.com/gpu: "1"
+        volumeMounts:
+        - name: hf-cache
+          mountPath: /home/appuser/.cache/huggingface
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: hf-cache
+        hostPath:
+          path: /home/fayolle/.cache/huggingface
+          type: DirectoryOrCreate
