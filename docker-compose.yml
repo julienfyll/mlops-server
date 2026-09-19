@@ -1,0 +1,19 @@
+services:
+  mlops-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mlops-server:latest
+    platform: linux/amd64
+    container_name: mlops-server
+    ports:
+      - "8000:8000"
+    volumes:
+      # Partage du cache Hugging Face de l'hôte : démarrage instantané sans re-téléchargement
+      - ~/.cache/huggingface:/home/appuser/.cache/huggingface
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - MODEL_NAME=Qwen/Qwen2.5-0.5B-Instruct
+      - HF_HUB_DISABLE_XET=1
+    restart: unless-stopped

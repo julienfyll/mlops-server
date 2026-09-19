@@ -1,0 +1,30 @@
+# Contrôle de version
+.git
+.gitignore
+
+# Environnements virtuels locaux (ne jamais copier un venv hôte dans un conteneur)
+.venv
+venv
+ENV
+
+# Fichiers de cache Python
+__pycache__
+*.py[cod]
+*$py.class
+.pytest_cache
+
+# Caches et modèles IA volumineux
+models/
+weights/
+*.bin
+*.safetensors
+.cache
+hf_cache
+
+# IDE et OS
+.idea
+.vscode
+.DS_Store
+
+# Documentation & métadonnées internes
+GEMINI.md

@@ -39,6 +39,19 @@ uv run pytest -v
 uv run mlops-server
 ```
 
+### 4. Lancement via Docker Compose (Conteneurisé)
+
+```bash
+# Démarre l'image conteneurisée linux/amd64 avec montage du cache Hugging Face
+docker compose up -d
+
+# Vérifier les logs
+docker compose logs -f
+
+# Arrêter le conteneur
+docker compose down
+```
+
 ---
 
 ## 📡 Endpoints de l'API
@@ -84,6 +97,6 @@ Génération de texte par le LLM.
 ## 🗺 Feuille de Route MLOps
 
 1. [x] **Phase 1 : Socle Applicatif & Local Mac M5** (FastAPI, PyTorch MPS, tests pytest, repo GitHub).
-2. [ ] **Phase 2 : Conteneurisation Multi-Architecture** (Dockerfile multi-stage, OrbStack Rosetta x86_64).
+2. [x] **Phase 2 : Conteneurisation Multi-Architecture** (Dockerfile multi-stage, OrbStack Rosetta x86_64, docker-compose).
 3. [ ] **Phase 3 : Accélération Matérielle AMD RX 6800** (Ubuntu 22.04, ROCm, passthrough `/dev/kfd` et `/dev/dri`).
 4. [ ] **Phase 4 : CI/CD & Orchestration** (GitHub Actions, GHCR, mini-cluster k3s, IaC Terraform).
