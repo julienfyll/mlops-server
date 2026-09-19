@@ -55,6 +55,10 @@ fi
 RENDER_GID=$(getent group render | cut -d: -f3 || echo "110")
 VIDEO_GID=$(getent group video | cut -d: -f3 || echo "44")
 
+# Paramètres configurables via variables d'environnement (avec valeurs par défaut saines)
+HSA_OVERRIDE_GFX_VERSION="${HSA_OVERRIDE_GFX_VERSION:-10.3.0}"
+PORT="${PORT:-8000}"
+
 # Lancement du conteneur
 docker run -d \
   --name "$CONTAINER_NAME" \
@@ -65,11 +69,11 @@ docker run -d \
   --group-add "$RENDER_GID" \
   --security-opt seccomp=unconfined \
   --ipc=host \
-  -e HSA_OVERRIDE_GFX_VERSION=10.3.0 \
+  -e HSA_OVERRIDE_GFX_VERSION="$HSA_OVERRIDE_GFX_VERSION" \
   -e HOST=0.0.0.0 \
-  -e PORT=8000 \
+  -e PORT="$PORT" \
   -e HF_HUB_DISABLE_XET=1 \
-  -p 8000:8000 \
+  -p "${PORT}:${PORT}" \
   -v "${HOME}/.cache/huggingface:/home/appuser/.cache/huggingface" \
   "$IMAGE_NAME"
 
