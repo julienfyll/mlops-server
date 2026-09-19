@@ -14,6 +14,8 @@ spec:
       labels:
         app: mlops-server
     spec:
+      securityContext:
+        supplementalGroups: [110, 44]
       containers:
       - name: mlops-server
         image: ghcr.io/julienfyll/mlops-server:rocm
