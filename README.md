@@ -150,3 +150,13 @@ curl http://<IP_SERVEUR>:30080/health
 3. [x] **Phase 3 : CI/CD GitHub Actions & Publication GHCR** (Build & Push automatique des images CPU et ROCm 6.2).
 4. [x] **Phase 4 : Accélération Matérielle AMD RX 6800** (Ubuntu 22.04, passthrough `/dev/kfd` & `/dev/dri`, benchmark 35 tok/s).
 5. [x] **Phase 5 : Orchestration Kubernetes (k3s)** (k3s, AMD GPU Device Plugin, manifests Deployment & Service, auto-healing validé).
+
+---
+
+## 🔭 Perspectives Futures (DevOps, Platform Engineering & Réseau)
+
+- [ ] **Accès Distant Zéro-Trust (Tailscale)** : Connecter le Mac et le PC Linux via un réseau maillé chiffré WireGuard sans ouvrir de port sur la box.
+- [ ] **Économie d'Énergie & Wake-on-LAN (WoL)** : Allumage automatique à distance du PC via paquet magique Ethernet pour une consommation nulle au repos.
+- [ ] **Déploiement Continu Automatisé (Keel)** : Détection et mise à jour automatique des Pods dès qu'une nouvelle image est publiée sur GHCR.
+- [ ] **Infrastructure as Code (Terraform / OpenTofu)** : Définition déclarative de l'infrastructure et de l'environnement système.
+- [ ] **Gestion des Secrets & DevSecOps (SOPS / Vault)** : Chiffrement des identifiants et clés d'accès sans rien exposer dans Git.
