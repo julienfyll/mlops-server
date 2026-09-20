@@ -16,6 +16,7 @@ def test_health_check(client):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ok"
+    assert data["app_version"] == "1.1.0-auto-update-test"
     assert "device" in data
     assert isinstance(data["device"], str)
     assert "platform" in data

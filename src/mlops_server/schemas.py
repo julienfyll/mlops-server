@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 class HealthResponse(BaseModel):
     status: str = Field(default="ok", description="État général du service")
+    app_version: str = Field(default="1.1.0-auto-update-test", description="Version applicative")
     device: str = Field(..., description="Accélérateur matériel détecté")
     platform: str = Field(default_factory=platform.platform, description="Plateforme hôte")
     python_version: str = Field(default_factory=lambda: sys.version.split()[0], description="Version Python")

@@ -44,6 +44,7 @@ async def health_check() -> HealthResponse:
     """Sonde de santé vérifiant le statut du serveur et le GPU détecté."""
     return HealthResponse(
         status="ok",
+        app_version="1.1.0-auto-update-test",
         device=get_compute_device(),
     )
 
