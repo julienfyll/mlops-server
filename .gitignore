@@ -42,3 +42,8 @@ hf_cache/
 .vscode/
 .idea/
 .DS_Store
+
+# Documentation locale & feuilles de route
+docs/ROADMAP.md
+docs/RECAP_CONCEPTS_ET_ARCHITECTURE.md
+docs/AI_ENGINEERING_GUIDE.md

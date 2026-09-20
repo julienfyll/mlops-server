@@ -143,6 +143,32 @@ curl http://<IP_SERVEUR>:30080/health
 
 ---
 
+## ⚡ Gestion Énergétique & Accès Distant (Tailscale & WoL)
+
+Le projet intègre une gestion énergétique intelligente pour machine hybride permettant de réduire la consommation à **0,5 Watt** au repos tout en offrant un accès universel chiffré :
+
+```bash
+# 1. Vérifier si le serveur est en ligne
+./scripts/power.sh status
+
+# 2. Allumer le PC à distance depuis le Mac (Wake-on-LAN)
+./scripts/power.sh on
+
+# 3. Démarrer le serveur GPU sur k3s (alloue les 16 Go de VRAM)
+./scripts/gpu.sh start
+
+# 4. Arrêter le serveur GPU (libère 100% de la VRAM pour le gaming/bureautique)
+./scripts/gpu.sh stop
+
+# 5. Éteindre proprement le PC à distance (consommation 0,5W)
+./scripts/power.sh off
+```
+
+> [!NOTE]
+> Grâce au réseau maillé **Tailscale (WireGuard)**, le pilotage SSH et les appels d'inférence LLM (`http://100.93.198.49:30080`) fonctionnent depuis n'importe quelle connexion Internet (extérieur, 4G/5G) sans ouverture de port sur la box.
+
+---
+
 ## 🗺 Feuille de Route MLOps
 
 1. [x] **Phase 1 : Socle Applicatif & Local Mac M5** (FastAPI, PyTorch MPS, tests pytest, repo GitHub).
@@ -150,13 +176,14 @@ curl http://<IP_SERVEUR>:30080/health
 3. [x] **Phase 3 : CI/CD GitHub Actions & Publication GHCR** (Build & Push automatique des images CPU et ROCm 6.2).
 4. [x] **Phase 4 : Accélération Matérielle AMD RX 6800** (Ubuntu 22.04, passthrough `/dev/kfd` & `/dev/dri`, benchmark 35 tok/s).
 5. [x] **Phase 5 : Orchestration Kubernetes (k3s)** (k3s, AMD GPU Device Plugin, manifests Deployment & Service, auto-healing validé).
+6. [x] **Phase 6 : Déploiement Continu Automatisé (Keel)** (Détection de nouveau SHA sur GHCR, polling @every 1m, stratégie Recreate mono-GPU).
+7. [x] **Phase 7 : Réseau Zéro-Trust & Accès Universel (Tailscale)** (Tunnel chiffré WireGuard, IP universelle `100.93.198.49`).
+8. [x] **Phase 8 : Gestion Énergétique & Wake-on-LAN (WoL)** (Allumage à distance par paquet magique et arrêt propre sans mot de passe).
 
 ---
 
-## 🔭 Perspectives Futures (DevOps, Platform Engineering & Réseau)
+## 🔭 Perspectives Futures (DevOps, Platform Engineering & AI Engineering)
 
-- [ ] **Accès Distant Zéro-Trust (Tailscale)** : Connecter le Mac et le PC Linux via un réseau maillé chiffré WireGuard sans ouvrir de port sur la box.
-- [ ] **Économie d'Énergie & Wake-on-LAN (WoL)** : Allumage automatique à distance du PC via paquet magique Ethernet pour une consommation nulle au repos.
-- [ ] **Déploiement Continu Automatisé (Keel)** : Détection et mise à jour automatique des Pods dès qu'une nouvelle image est publiée sur GHCR.
+- [ ] **Ingénierie de l'IA Générative (Contrôle du Non-Déterminisme)** : Décodage contraint (Outlines / JSON Schema strict), évaluations automatisées (Evals) et fine-tuning LoRA.
 - [ ] **Infrastructure as Code (Terraform / OpenTofu)** : Définition déclarative de l'infrastructure et de l'environnement système.
 - [ ] **Gestion des Secrets & DevSecOps (SOPS / Vault)** : Chiffrement des identifiants et clés d'accès sans rien exposer dans Git.

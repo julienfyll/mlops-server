@@ -10,7 +10,7 @@
 set -euo pipefail
 
 REMOTE_HOST="gpu-server"
-SERVER_URL="http://192.168.1.22:30080"
+SERVER_URL="http://100.93.198.49:30080"
 
 case "${1:-}" in
     start)

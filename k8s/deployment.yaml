@@ -4,8 +4,13 @@ metadata:
   name: mlops-server
   labels:
     app: mlops-server
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 1m"
+    keel.sh/match-tag: "true"
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -21,7 +26,7 @@ spec:
       containers:
       - name: mlops-server
         image: ghcr.io/julienfyll/mlops-server:rocm
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
           name: http

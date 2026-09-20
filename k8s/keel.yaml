@@ -1,0 +1,166 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keel
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keel
+  namespace: keel
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keel
+rules:
+  # Keel inspects the cluster it runs in to find the workloads it manages.
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - nodes
+    verbs:
+      - get
+      - watch
+      - list
+  # Needed only with the Helm provider (HELM3_PROVIDER="true"): the Helm SDK keeps
+  # release state in Secrets (the default driver) and reads it with these verbs.
+  # Keel itself never reads secrets — set HELM3_PROVIDER="false" and drop this rule
+  # if the cluster has no Helm releases.
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - watch
+      - list
+  # The workloads Keel watches and rewrites images on. The empty string is the core
+  # API group and must stay: pods and replicationcontrollers belong to it, and Keel
+  # lists pods to corroborate rollout scheduling and deletes them when an approval
+  # tells it to (provider/kubernetes/implementer.go).
+  - apiGroups:
+      - ""
+      - extensions
+      - apps
+      - batch
+    resources:
+      - pods
+      - replicasets
+      - replicationcontrollers
+      - statefulsets
+      - deployments
+      - daemonsets
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - delete
+      - watch
+      - list
+      - update
+  # Only needed with the Helm provider and HELM_DRIVER="configmaps", where Helm
+  # writes release state back to config maps. The chart's equivalent rule also
+  # grants pods/portforward, which this Keel version never calls, so it is omitted
+  # here.
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - create
+      - update
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keel
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keel
+subjects:
+  - kind: ServiceAccount
+    name: keel
+    namespace: keel
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keel
+  namespace: keel
+  labels:
+    app: keel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keel
+  template:
+    metadata:
+      labels:
+        app: keel
+    spec:
+      serviceAccountName: keel
+      containers:
+        - name: keel
+          # Pinned to the release chart/keel currently declares as appVersion in
+          # chart/keel/Chart.yaml — check there (or the GitHub releases page) for
+          # the newest version. A `nightly` tag exists on ghcr.io/keel-hq/keel
+          # and keelhq/keel, but it is a pre-release and is not supported in
+          # production.
+          image: "ghcr.io/keel-hq/keel:0.22.3"
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/keel"]
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: AUTH_MODE
+              value: "legacy"
+            - name: POLL
+              value: "true"
+            - name: POLL_DEFAULTSCHEDULE
+              value: "@every 1m"
+            - name: HELM3_PROVIDER
+              value: "false"
+            - name: NOTIFICATION_LEVEL
+              value: "info"
+          ports:
+            - containerPort: 9300
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 9300
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9300
+            initialDelaySeconds: 5
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9300
+            initialDelaySeconds: 5
+            timeoutSeconds: 10
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+
+---

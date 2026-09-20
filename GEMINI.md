@@ -36,5 +36,8 @@ Construire un pipeline MLOps distribué de bout en bout :
     2. **Le but précis** de l'opération (pourquoi cette action est nécessaire).
     3. **Le résultat attendu en retour** (ce que la commande va produire ou afficher).
   - Aucune action ne doit être lancée sans cette visibilité préalable.
+- **Synthèse Systématique Post-Exécution** :
+  - Immédiatement après l'exécution de toute commande terminal ou modification de fichier, afficher obligatoirement en tête de réponse une phrase concise et explicite résumant l'issue exacte de l'opération (succès, échec, statut ou résultat clé obtenu).
+  - Cette phrase doit être systématique et claire avant tout développement ou analyse approfondie.
 
 
