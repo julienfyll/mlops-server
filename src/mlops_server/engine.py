@@ -1,10 +1,29 @@
 import logging
+import threading
 import time
-from typing import Optional, Tuple
+from typing import Iterator, Optional, Tuple
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    StoppingCriteria,
+    StoppingCriteriaList,
+    TextIteratorStreamer,
+)
 
 logger = logging.getLogger("mlops_server.engine")
+
+
+class StopEventCriteria(StoppingCriteria):
+    """Critère d'arrêt PyTorch qui interrompt la boucle de génération si un événement threading est activé."""
+
+    def __init__(self, stop_event: threading.Event) -> None:
+        super().__init__()
+        self.stop_event = stop_event
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        return self.stop_event.is_set()
+
 
 class LLMEngine:
     def __init__(self) -> None:
@@ -87,6 +106,64 @@ class LLMEngine:
         response_text = self.tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
         return response_text, round(latency_ms, 2)
+
+    def generate_stream(
+        self,
+        prompt: str,
+        max_tokens: int = 256,
+        temperature: float = 0.7,
+        top_p: float = 0.9,
+        stop_event: Optional[threading.Event] = None,
+    ) -> Iterator[str]:
+        """Génère du texte au fil de l'eau via un TextIteratorStreamer dans un thread d'arrière-plan."""
+        if not self.model or not self.tokenizer:
+            raise RuntimeError("Le modèle n'est pas encore chargé en mémoire.")
+
+        messages = [
+            {"role": "system", "content": "Tu es un assistant IA d'analyse et d'arbitrage logique et précis."},
+            {"role": "user", "content": prompt},
+        ]
+        text_input = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+
+        model_inputs = self.tokenizer([text_input], return_tensors="pt").to(self.device)
+
+        streamer = TextIteratorStreamer(
+            self.tokenizer,
+            skip_prompt=True,
+            skip_special_tokens=True,
+        )
+
+        stopping_criteria = StoppingCriteriaList()
+        if stop_event is not None:
+            stopping_criteria.append(StopEventCriteria(stop_event))
+
+        generate_kwargs = dict(
+            **model_inputs,
+            streamer=streamer,
+            max_new_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            do_sample=True if temperature > 0 else False,
+            pad_token_id=self.tokenizer.eos_token_id,
+            stopping_criteria=stopping_criteria,
+        )
+
+        # Exécution de model.generate dans un thread dédié pour alimenter la queue du streamer
+        thread = threading.Thread(target=self.model.generate, kwargs=generate_kwargs)
+        thread.start()
+
+        try:
+            for new_text in streamer:
+                if stop_event is not None and stop_event.is_set():
+                    logger.info("Arrêt d'urgence du streaming demandé (client déconnecté).")
+                    break
+                yield new_text
+        finally:
+            thread.join()
 
     def unload(self) -> None:
         """Libère la mémoire si nécessaire."""

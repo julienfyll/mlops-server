@@ -1,0 +1,65 @@
+[
+  {
+    "id": "eval_01_concision",
+    "name": "Capitale et Concision",
+    "category": "instruction_following",
+    "prompt": "Quelle est la capitale de la France ? Réponds uniquement par le nom de la ville en un mot.",
+    "max_tokens": 15,
+    "temperature": 0.0,
+    "criteria": {
+      "type": "contains_any",
+      "expected": ["Paris", "paris"],
+      "max_words": 4
+    }
+  },
+  {
+    "id": "eval_02_json_strict",
+    "name": "Extraction JSON Structurée",
+    "category": "structured_output",
+    "prompt": "Extrais l'identité suivante sous la forme d'un objet JSON strict valide sans balises markdown ni explication : 'Alice Dubois, 29 ans, Ingénieure MLOps'. Utilise les clés 'nom', 'age' et 'poste'.",
+    "max_tokens": 60,
+    "temperature": 0.0,
+    "criteria": {
+      "type": "valid_json",
+      "required_keys": ["nom", "age", "poste"]
+    }
+  },
+  {
+    "id": "eval_03_classification",
+    "name": "Classification de Sentiment",
+    "category": "classification",
+    "prompt": "Classifie le sentiment de cette critique en un seul mot parmi [POSITIF, NEGATIF, NEUTRE] : 'Le colis est arrivé avec trois semaines de retard et le carton était déchiré.'",
+    "max_tokens": 10,
+    "temperature": 0.0,
+    "criteria": {
+      "type": "contains_any",
+      "expected": ["NEGATIF", "Négatif", "negatif"],
+      "max_words": 3
+    }
+  },
+  {
+    "id": "eval_04_logic_reasoning",
+    "name": "Raisonnement Déductif Simple",
+    "category": "reasoning",
+    "prompt": "Si tous les félins sont des mammifères et que le tigre est un félin, le tigre est-il un mammifère ? Réponds uniquement par 'OUI' ou 'NON'.",
+    "max_tokens": 10,
+    "temperature": 0.0,
+    "criteria": {
+      "type": "contains_any",
+      "expected": ["OUI", "Oui", "oui"],
+      "max_words": 3
+    }
+  },
+  {
+    "id": "eval_05_code_syntax",
+    "name": "Génération de Code Python",
+    "category": "code_generation",
+    "prompt": "Écris une fonction Python simple nommée 'calculate_vram' qui prend 'params_billion' et retourne 'params_billion * 2'. Réponds uniquement avec la définition de la fonction.",
+    "max_tokens": 50,
+    "temperature": 0.0,
+    "criteria": {
+      "type": "contains_all",
+      "expected": ["def calculate_vram", "return"]
+    }
+  }
+]

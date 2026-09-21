@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "ai-gateway"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+        labels:
+          role: "control-plane"
+          environment: "mac-m5"
+
+  - job_name: "gpu-worker"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["100.93.198.49:30080"]
+        labels:
+          role: "inference-worker"
+          environment: "linux-amd-rocm"
+          gpu: "radeon-rx-6800"
